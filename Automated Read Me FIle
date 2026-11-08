@@ -1,0 +1,42 @@
+LEGACY BANK DES-ECB PROJECT — CONDITIONAL PADDING
+Python 3.8+, no external cryptographic libraries.
+
+Files: des.py, client.py, server.py, test_des.py, test_client_server.py
+
+RUN TESTS (with the server stopped):
+  python -m py_compile des.py client.py server.py test_des.py test_client_server.py
+  python test_des.py
+  python test_client_server.py
+
+RUN MANUALLY:
+  Terminal 1: python server.py
+  Terminal 2: python client.py
+
+Enter TRANSFER to encrypt one 8-byte block with no padding.
+Enter PAY:2500.50 to add five padding bytes, making two blocks.
+Enter TRANSFERTRANSFER to encrypt two identical blocks with no padding;
+the two ciphertext blocks match for the ECB demonstration.
+
+The DES key is hardcoded as BANKKEY! in client.py and server.py.
+The DES algorithm uses the same standard tables and 16 Feistel rounds as
+Appendix A, without importing cryptographic libraries.
+
+Padding is conditional, NOT standard PKCS#7: only messages whose byte length
+is not divisible by 8 receive padding bytes. Each padding byte equals the
+number of added bytes, from 1 through 7. Fully aligned messages receive none.
+
+For accurate unpadding, the client transmits an 8-byte header:
+  4 bytes: ciphertext length in bytes
+  4 bytes: original plaintext length in bytes
+The server validates both lengths and any padding, then decrypts and prints
+only the original plaintext. Unlike the previous version, the client and
+server in this ZIP must be used together because the header format changed.
+
+The client accepts 1–4096 ASCII bytes, including digits and punctuation.
+The server has a five-second deadline to receive each complete transaction.
+The maximum plaintext length is 4096 bytes. Local socket: 127.0.0.1:5000.
+The same static 64-bit key is used for encryption and decryption; the 8 parity
+bit positions are omitted by DES Permuted Choice 1, giving 56 effective bits.
+
+For a classroom demonstration only: DES-ECB, a hardcoded key, and an
+unauthenticated message length are unsuitable for real banking security.
